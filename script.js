@@ -1,86 +1,75 @@
 console.log('it works');
-
+//To day now
 const postList = document.querySelector('#post-list');
-const blogList = document.querySelector(".card");
-const submitButton = document.querySelector(".btn-primary");
-const titleInput = document.querySelector("#postTitle");
-const contentTextarea = document.querySelector("#postContent");
-const divTextarea = document.querySelector("#error-message")
-const imgInput = document.querySelector("#postImg");
-const authorInput = document.querySelector("#new-post-author");
-const formReset = document.querySelector("#post-form");
 const hideButton = document.querySelector("#show-form");
 const formCard = document.querySelector("#form-card");
+const formElement = document.querySelector("#post-form");
+const textareaErrorMassage = document.querySelector("#error-message");
 const deleteButton = document.querySelector(".btn-delete");
 
-submitButton.addEventListener("click", ($event) => {
-    $event.preventDefault();
-    const newPost = document.createElement('div');
-    newPost.classList.add('card');
+const toggleForm = () => {
+  if (formCard.classList.contains('hidden')){
+     formCard.classList.remove('hidden');
+     hideButton.textContent = "Hide form";
+   } else {
+     formCard.classList.add("hidden");
+     hideButton.textContent = "Add a post";
+   }
+ }
 
-    const newPostImg = document.createElement('img');
-    newPostImg.classList.add("card-img-top");
-    newPostImg.setAttribute("src", imgInput.value);
-    newPostImg.setAttribute("alt", "nice image");
+const createElement = (form) => {
 
-    const maindiv = document.createElement("div");
-    maindiv.classList.add("card-body");
+  const imgSrc = form.postImg.value;
+  const postTitle = form.postTitle.value;
+  const postContent = form.postContent.value;
+  const postAuthor = form.postAuthor.value;
+  const today = new Date();
 
-    const newPostHeading = document.createElement('h5');
-    newPostHeading.classList.add('card-title');
-    newPostHeading.textContent = titleInput.value  +  authorInput.value ;
+  return `
+    <div class="card">
+      <img class="card-img-top" src="${imgSrc}" alt="Card image cap"/>
+      <div class="card-body">
+        <h5 class="card-title">${postTitle} <small>by ${postAuthor}</small> </h5>
+        <p class="card-text">${postContent}</p>
+        <button type="button" class="btn btn-sm btn-light btn-delete">Delete Entry</button>
+      </div>
+      <div class="card-footer text-muted">
+        ${today.toLocaleDateString()}
+      </div>
+    </div>
+  `;
+};
 
-    const newPostContent = document.createElement('p');
-    newPostContent.classList.add("card-text");
-    newPostContent.textContent = contentTextarea.value;
+const handleSubmit = (e) => {
+  e.preventDefault();
 
-    const deleteButton = document.createElement("button");
-    deleteButton.classList.add("btn", "btn-sm", "btn-light", "btn-delete");
-    deleteButton.textContent = "Delete entry";
+  const form = e.target;
+  const postContent = form.postContent;
+  const numberOfWords = postContent.value.split(' ').length;
 
-    const divFooter = document.createElement("div");
-    divFooter.classList.add("card-footer", "text-muted");
-    const today = new Date();
-    const date = today.getDate()+'/'+(today.getMonth()+1)+'/'+today.getFullYear();
-    divFooter.textContent = date; 
+  if (numberOfWords < 20) {
+    postContent.classList.add("is-invalid");
+    textareaErrorMassage.classList.remove("hidden");
+  } else {
+    const newPost = createElement(form);
+    postList.insertAdjacentHTML("afterbegin", newPost);
 
-    newPost.appendChild(newPostImg);
-    newPost.appendChild(maindiv);
-    maindiv.appendChild(newPostHeading);
-    maindiv.appendChild(newPostContent);
-    maindiv.appendChild(deleteButton);
-    newPost.appendChild(divFooter);
+    postContent.classList.remove("is-invalid");
+    textareaErrorMassage.classList.add("hidden");
+  }
+  form.reset();
+};
 
-    blogList.insertAdjacentElement("beforebegin", newPost);
+formElement.addEventListener("submit", handleSubmit);
 
-    formReset.reset();
-});
-
-function hideForm() {
-    if (formCard.style.display === 'block') {
-        formCard.style.display = 'none';
-        hideButton.textContent = 'Add a post';
-    } else {
-       formCard.style.display = 'block';
-       hideButton.textContent = 'Hide form';
-    }
+const deletePost = (e) => {
+  if (e.target.classList.contains('btn-delete')) {
+    const deleteBtn = e.target;
+    deleteBtn.closest('.card').remove();
+  }
 }
 
-hideButton.addEventListener('click', hideForm);
+//Event delegation
+document.addEventListener("click", deletePost);
 
-contentTextarea.addEventListener('input', (event) => {
-    // if length <= 6 && >= 12 
-    if (event.target.value.length < 20) {
-      // add class
-      contentTextarea.classList.add("is-invalid");
-      divTextarea.style.display = "block";
-    } else {
-      // remove class
-      contentTextarea.classList.remove("is-invalid");
-      divTextarea.style.display = "none";
-    }
-  });
-
-deleteButton.addEventListener("click", ($event) => {
-    $event.currentTarget.preventElement.remove();
-});
+hideButton.addEventListener('click', toggleForm);
